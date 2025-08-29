@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: admin_petstore
+      POSTGRES_PASSWORD: A1005707690n
+      POSTGRES_DB: petstore_db
+    volumes:
+      - petstore_db_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: npm run dev
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  frontend:
+    image: node:20.19.0
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: npm run dev -- --host
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  petstore_db_data:
